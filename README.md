@@ -1,8 +1,20 @@
-# Oh My Claude Code Uninstaller
+# oh-my Tool Uninstallers
 
-Safe uninstall script for [Oh My Claude Code](https://github.com/Yeachan-Heo/oh-my-claudecode).
+We have the right not to use oh-my tools.
 
-It removes the OMC plugin/runtime/config artifacts from Claude Code without touching unrelated plugins or MCP servers.
+This repository hosts agent-native uninstall scripts for people who want help removing oh-my toolchains from their machines. The intent is simple: an agent should be able to inspect a machine, run a dry-run, remove known artifacts safely, and explain what changed.
+
+Current coverage is intentionally narrow and truthful: the included script removes [Oh My Claude Code](https://github.com/Yeachan-Heo/oh-my-claudecode) artifacts only. This repository is meant to grow into a home for uninstallers for related tools such as Oh My Open Agent, Oh My Claude Code, Oh My Codex, and other `oh-my-*` projects.
+
+For agent-specific operating instructions, see [AGENT_GUIDE.md](./AGENT_GUIDE.md).
+
+## Available Scripts
+
+| Script | Status | Purpose |
+| --- | --- | --- |
+| `scripts/uninstall-oh-my-claudecode.sh` | Available | Remove Oh My Claude Code (OMC) from Claude Code local or SSH targets. |
+| `scripts/uninstall-oh-my-openagent.sh` | Planned | Future remover for Oh My Open Agent artifacts. |
+| `scripts/uninstall-oh-my-codex.sh` | Planned | Future remover for Oh My Codex artifacts. |
 
 ## Quick Start
 
@@ -24,7 +36,9 @@ Remove on an SSH host:
 curl -fsSL https://raw.githubusercontent.com/IYENTeam/oh-my-claudecode-uninstaller/main/scripts/uninstall-oh-my-claudecode.sh | bash -s -- --target macmini --yes
 ```
 
-## What It Removes
+## What The Current Script Removes
+
+`scripts/uninstall-oh-my-claudecode.sh` removes OMC-only artifacts:
 
 - Global npm package `oh-my-claude-sisyphus`, if installed.
 - OMC-owned `omc` binary/symlink, if found.
@@ -51,6 +65,7 @@ curl -fsSL https://raw.githubusercontent.com/IYENTeam/oh-my-claudecode-uninstall
 
 - Other Claude plugins.
 - Other MCP servers.
+- Other oh-my tools that are not OMC.
 - Historical prompt history (`~/.claude/history.jsonl`).
 - Backup/cache history files that merely mention OMC.
 
@@ -59,6 +74,24 @@ Use these options if you also want history/cache cleanup:
 ```bash
 ./scripts/uninstall-oh-my-claudecode.sh --yes --remove-history --remove-backups
 ```
+
+## Unstar Help
+
+Removal can include unstarring the upstream repository when the user explicitly wants that. This repository does not silently change GitHub stars, but an agent can help you do it:
+
+Manual:
+
+1. Open the GitHub repository page.
+2. Click `Unstar`.
+
+CLI:
+
+```bash
+gh auth login
+gh repo unstar Yeachan-Heo/oh-my-claudecode
+```
+
+For future uninstallers, replace `OWNER/REPO` with the target oh-my repository.
 
 ## Options
 
@@ -75,8 +108,28 @@ Use these options if you also want history/cache cleanup:
 
 ## Safety
 
+- Run `--dry-run` first, especially on SSH targets.
 - The script creates timestamped `.pre-omc-uninstall-*.bak` backups before editing JSON or `CLAUDE.md`.
 - JSON edits are targeted to OMC keys/values only.
 - `omc` binaries are removed only when their target/content appears OMC-owned.
 - Hook and agent directories are removed only when their files are OMC-marked; mixed directories are cleaned selectively.
-- `--dry-run` is recommended before running on a remote host.
+- Star changes are opt-in and require explicit GitHub CLI authentication.
+
+## Adding More oh-my Removers
+
+Add one script per tool:
+
+```text
+scripts/uninstall-oh-my-openagent.sh
+scripts/uninstall-oh-my-codex.sh
+scripts/uninstall-oh-my-<tool>.sh
+```
+
+Each script should follow the same contract:
+
+- Support `--dry-run`.
+- Support `--yes` for agent runs.
+- Support `--target HOST` for SSH cleanup.
+- Preserve unrelated tools and configs.
+- Document what it removes and what it refuses to remove.
+- Mention optional unstar steps separately from filesystem cleanup.
